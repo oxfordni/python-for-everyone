@@ -117,5 +117,5 @@ sudo apt-get update && sudo apt-get install python3
 [official-tutorial]: https://docs.python.org/3/tutorial/
 [style-guide]: https://www.python.org/dev/peps/pep-0008/
 [why-python]: https://docs.python.org/3/faq/general.html#why-is-it-called-python
-[wiki]: ./wiki
+[wiki]: https://github.com/oxfordni/python-for-everyone/wiki
 [zen]: https://en.wikipedia.org/wiki/Zen_of_Python
