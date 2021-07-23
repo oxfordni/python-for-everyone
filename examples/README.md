@@ -5,5 +5,5 @@ interesting.
 
 ## Lessons
 
-- [Lesson #1](./examples/lesson1/)
-- [Lesson #2](./examples/lesson2/)
+- [Lesson #1](./lesson1/)
+- [Lesson #2](./lesson2/)
