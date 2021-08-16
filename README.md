@@ -104,6 +104,8 @@ sudo apt-get update && sudo apt-get install python3
 
 - [Blocky][blocky] is a way to program via a visual programming language and you
   can see the respective code behind it in various languages, including Python
+- [The Algorithms][the-algorithms]' goal is to work together to document and
+  model beautiful, helpful and interesting algorithms using code.
 
 <!-- References -->
 
@@ -116,6 +118,7 @@ sudo apt-get update && sudo apt-get install python3
 [official-page]: https://www.python.org/
 [official-tutorial]: https://docs.python.org/3/tutorial/
 [style-guide]: https://www.python.org/dev/peps/pep-0008/
+[the-algorithms]: https://the-algorithms.com
 [why-python]: https://docs.python.org/3/faq/general.html#why-is-it-called-python
 [wiki]: https://github.com/oxfordni/python-for-everyone/wiki
 [zen]: https://en.wikipedia.org/wiki/Zen_of_Python
