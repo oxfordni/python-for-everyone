@@ -1,6 +1,6 @@
 # Building UIs
 
-A simple `hello world` app.
+A simple `notepad` app.
 
 ## Install
 
@@ -27,7 +27,7 @@ We can execute the example project, after activating the environment.
 source env/bin/activate
 
 # Run the example project
-python hello_world_ui.py
+python notepad.py
 
 # Deactivate the environment
 deactivate
