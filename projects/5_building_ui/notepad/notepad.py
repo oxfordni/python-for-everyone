@@ -41,7 +41,7 @@ BUTTON_OPTIONS = {
 }
 
 # Some helpful globals
-CURRENTLY_OPEN_FILE = None
+CURRENTLY_OPEN_FILE = ''
 
 # Let's apply our overall Theme, for a complete list: sg.theme_list()
 sg.theme(NOTEPAD_THEME)
@@ -61,7 +61,20 @@ editor = sg.Multiline(
 # Our app should also have a menu
 menu_def = [
     ['&File', [f'&{EVENT_OPEN}', f'&{EVENT_SAVE}', EVENT_SAVE_AS, 'E&xit']],
-    ['&Edit', [EVENT_UNDO, EVENT_REDO, '---', EVENT_CUT, EVENT_COPY, EVENT_PASTE, EVENT_DELETE, '---', EVENT_SELECTALL]],
+    [
+        '&Edit',
+        [
+            EVENT_UNDO,
+            EVENT_REDO,
+            '---',
+            EVENT_CUT,
+            EVENT_COPY,
+            EVENT_PASTE,
+            EVENT_DELETE,
+            '---',
+            EVENT_SELECTALL,
+        ],
+    ],
     ['&Help', f'&{EVENT_ABOUT}'],
 ]
 
@@ -71,7 +84,12 @@ menu = sg.Menu(menu_def, key=KEY_MENU)
 layout = [
     [menu],
     [editor],
-    [sg.Button(EVENT_OPEN, **BUTTON_OPTIONS), sg.Button(EVENT_SAVE, **BUTTON_OPTIONS), sg.Button(EVENT_SAVE_AS, **BUTTON_OPTIONS), sg.Button(EVENT_EXIT, **BUTTON_OPTIONS)],
+    [
+        sg.Button(EVENT_OPEN, **BUTTON_OPTIONS),
+        sg.Button(EVENT_SAVE, **BUTTON_OPTIONS),
+        sg.Button(EVENT_SAVE_AS, **BUTTON_OPTIONS),
+        sg.Button(EVENT_EXIT, **BUTTON_OPTIONS)
+    ],
 ]
 
 # We create a window, and pass it our layout
@@ -99,6 +117,7 @@ def save_file(filename, contents):
 
 # Our main event loop, this is what keeps the app running and updating
 while True:
+    # We constantly read the events and values from our window
     event, values = window.read()
     if event in QUIT_EVENTS:
         # Break out of the loop if the user wants to close the window
@@ -130,12 +149,13 @@ while True:
         )
         load_file(CURRENTLY_OPEN_FILE)
         continue
-    if event == EVENT_SAVE and CURRENTLY_OPEN_FILE is not None:
+    if event == EVENT_SAVE and CURRENTLY_OPEN_FILE:
         # We save the document into the previously opened file
         current_document = values[KEY_EDITOR]
         save_file(CURRENTLY_OPEN_FILE, current_document)
         continue
-    if event == EVENT_SAVE_AS or (event == EVENT_SAVE and CURRENTLY_OPEN_FILE is None):
+    if (event == EVENT_SAVE_AS or
+            (event == EVENT_SAVE and not CURRENTLY_OPEN_FILE)):
         # We open a file browser dialog for the user to select a file to save
         CURRENTLY_OPEN_FILE = sg.popup_get_file(
             'Select a file to save',
@@ -147,6 +167,29 @@ while True:
         )
         current_document = values[KEY_EDITOR]
         save_file(CURRENTLY_OPEN_FILE, current_document)
+        continue
+    if event == EVENT_UNDO:
+        # We undo the last action
+        continue
+    if event == EVENT_REDO:
+        # We redo the last action
+        continue
+    if event == EVENT_CUT:
+        # We copy the contents of the editor into the clipboard
+        # and delete the contents of the editor
+        continue
+    if event == EVENT_PASTE:
+        # We paste the contents of the clipboard into the editor
+        continue
+    if event == EVENT_COPY:
+        # We copy the contents of the editor into the clipboard
+        continue
+    if event == EVENT_DELETE:
+        # We delete the contents of the editor
+        continue
+    if event == EVENT_SELECTALL:
+        # We select all the contents of the editor
+        continue
 
 # Some cleanup before the app terminates
 window.close()
