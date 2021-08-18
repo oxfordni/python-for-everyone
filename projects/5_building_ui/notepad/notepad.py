@@ -120,7 +120,7 @@ while True:
     if event == EVENT_OPEN:
         # We open a file browser dialog for the user to select a file to open
         CURRENTLY_OPEN_FILE = sg.popup_get_file(
-            'Selct a file to open',
+            'Select a file to open',
             EVENT_OPEN,
             initial_folder=USER_HOME,
             no_window=True,
@@ -136,7 +136,7 @@ while True:
     if event == EVENT_SAVE_AS or (event == EVENT_SAVE and CURRENTLY_OPEN_FILE is None):
         # We open a file browser dialog for the user to select a file to save
         CURRENTLY_OPEN_FILE = sg.popup_get_file(
-            'Selct a file to save',
+            'Select a file to save',
             EVENT_SAVE_AS,
             initial_folder=USER_HOME,
             save_as=True,
