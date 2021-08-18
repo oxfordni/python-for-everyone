@@ -117,6 +117,8 @@ while True:
             grab_anywhere=True,
         )
         window.reappear()
+        # We use the continue statement to return to the top of the loop
+        continue
     if event == EVENT_OPEN:
         # We open a file browser dialog for the user to select a file to open
         CURRENTLY_OPEN_FILE = sg.popup_get_file(
