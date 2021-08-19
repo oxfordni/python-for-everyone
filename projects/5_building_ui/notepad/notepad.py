@@ -19,19 +19,19 @@ USER_HOME = os.path.expanduser('~')
 KEY_EDITOR = '-EDITOR-'
 KEY_MENU = '-MENU-'
 EVENT_ABOUT = 'About...'
-EVENT_COPY = 'Copy' # TBD
-EVENT_CUT = 'Cut' # TBD
-EVENT_DELETE = 'Delete' # TBD
+EVENT_COPY = 'Copy'
+EVENT_CUT = 'Cut'
+EVENT_CLEAR = 'Clear'
 EVENT_EXIT = 'Exit'
 EVENT_OK = 'OK'
 EVENT_OPEN = 'Open'
-EVENT_PASTE = 'Paste' # TBD
+EVENT_PASTE = 'Paste'
 EVENT_QUIT = 'Quit'
-EVENT_REDO = 'Redo' # TBD
+EVENT_REDO = 'Redo'
 EVENT_SAVE = 'Save'
 EVENT_SAVE_AS = 'Save As'
-EVENT_SELECTALL = 'Select All' # TBD
-EVENT_UNDO = 'Undo' # TBD
+EVENT_SELECTALL = 'Select All'
+EVENT_UNDO = 'Undo'
 QUIT_EVENTS = (sg.WIN_CLOSED, EVENT_EXIT, EVENT_QUIT)
 BUTTON_OPTIONS = {
     'size': (60, 30),
@@ -70,7 +70,7 @@ menu_def = [
             EVENT_CUT,
             EVENT_COPY,
             EVENT_PASTE,
-            EVENT_DELETE,
+            EVENT_CLEAR,
             '---',
             EVENT_SELECTALL,
         ],
@@ -170,25 +170,32 @@ while True:
         continue
     if event == EVENT_UNDO:
         # We undo the last action
+        window[KEY_EDITOR].Widget.undo()
         continue
     if event == EVENT_REDO:
         # We redo the last action
+        window[KEY_EDITOR].Widget.redo()
         continue
     if event == EVENT_CUT:
         # We copy the contents of the editor into the clipboard
         # and delete the contents of the editor
+        window[KEY_EDITOR].Widget.cut()
         continue
     if event == EVENT_PASTE:
         # We paste the contents of the clipboard into the editor
+        window[KEY_EDITOR].Widget.paste()
         continue
     if event == EVENT_COPY:
         # We copy the contents of the editor into the clipboard
+        window[KEY_EDITOR].Widget.copy()
         continue
-    if event == EVENT_DELETE:
+    if event == EVENT_CLEAR:
         # We delete the contents of the editor
+        window[KEY_EDITOR].Widget.clear()
         continue
     if event == EVENT_SELECTALL:
         # We select all the contents of the editor
+        window[KEY_EDITOR].Widget.selectAll()
         continue
 
 # Some cleanup before the app terminates
