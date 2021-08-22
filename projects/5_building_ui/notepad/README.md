@@ -32,3 +32,13 @@ python notepad.py
 # Deactivate the environment
 deactivate
 ```
+
+## Preview
+
+The following screenshot is what you should see when you execute the app.
+
+![Notepad][img-preview]
+
+<!-- References -->
+
+[img-preview]: ./assets/preview.png
