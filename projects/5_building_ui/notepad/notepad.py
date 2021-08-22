@@ -96,13 +96,6 @@ layout = [
     ],
 ]
 
-# We create a window, and pass it our layout
-window = sg.Window(
-    NOTEPAD_TITLE,
-    layout,
-    size=EDITOR_SIZE,
-)
-
 # We should always try to split our code into smaller functions
 def validate_changes(value):
     """
@@ -125,14 +118,34 @@ def confirm_exit():
         grab_anywhere=True,
     )
 
+def get_file_to_load():
+    """Open a popup window to select a file to load"""
+    return sg.popup_get_file(
+        'Select a file to open',
+        EVENT_OPEN,
+        initial_folder=USER_HOME,
+        no_window=True,
+        default_extension=EDITOR_EXTENSION,
+    )
+
+def get_file_to_save():
+    """Open a popup window to select a file to save"""
+    return sg.popup_get_file(
+        'Select a file to save',
+        EVENT_SAVE_AS,
+        initial_folder=USER_HOME,
+        save_as=True,
+        no_window=True,
+        default_extension=EDITOR_EXTENSION,
+    )
+
 def load_file(filename):
     """Load a file into the editor"""
     if not filename:
-        return 0, 0
+        return '', 0, 0
     with open(filename, 'r') as f:
         contents = f.read()
-        window[KEY_EDITOR].update(contents)
-        return len(contents), hash(contents)
+        return contents, len(contents), hash(contents)
 
 def save_file(filename, contents):
     """Save a file from the editor"""
@@ -143,8 +156,7 @@ def save_file(filename, contents):
         return len(contents), hash(contents)
 
 def show_about():
-    # We temporarily hide the main window and display an information message
-    window.disappear()
+    """Show the about message in a popup window"""
     sg.popup(
         f'{NOTEPAD_TITLE} {NOTEPAD_VERSION}',
         f'by {NOTEPAD_AUTHOR}',
@@ -155,83 +167,101 @@ def show_about():
         font=EDITOR_FONT,
         grab_anywhere=True,
     )
-    window.reappear()
 
-# Our main event loop, this is what keeps the app running and updating
-while True:
-    # We constantly read the events and values from our window
-    event, values = window.read()
-    # We can check if changes have been made to the document
-    HAS_UNSAVED_CHANGES = validate_changes(values[KEY_EDITOR])
-    if event in QUIT_EVENTS:
-        # Break out of the loop if the user wants to close the window, checks
-        # if there are unsaved changes
-        if not HAS_UNSAVED_CHANGES or confirm_exit() == 'OK':
-            break
-    if event == EVENT_ABOUT:
-        # Using a dedicated function to handle the about event
-        show_about()
-        # We use the continue statement to return to the top of the loop
-        continue
-    if event == EVENT_OPEN:
-        # We open a file browser dialog for the user to select a file to open
-        CURRENTLY_OPEN_FILE = sg.popup_get_file(
-            'Select a file to open',
-            EVENT_OPEN,
-            initial_folder=USER_HOME,
-            no_window=True,
-            default_extension=EDITOR_EXTENSION,
-        )
-        DOCUMENT_INITIAL_LENGTH, DOCUMENT_INITIAL_HASH = load_file(CURRENTLY_OPEN_FILE)
-        continue
-    if event == EVENT_SAVE and CURRENTLY_OPEN_FILE:
-        # We save the document into the previously opened file
-        current_document = values[KEY_EDITOR]
-        DOCUMENT_INITIAL_LENGTH, DOCUMENT_INITIAL_HASH = save_file(CURRENTLY_OPEN_FILE, current_document)
-        continue
-    if (event == EVENT_SAVE_AS or
-            (event == EVENT_SAVE and not CURRENTLY_OPEN_FILE)):
-        # We open a file browser dialog for the user to select a file to save
-        CURRENTLY_OPEN_FILE = sg.popup_get_file(
-            'Select a file to save',
-            EVENT_SAVE_AS,
-            initial_folder=USER_HOME,
-            save_as=True,
-            no_window=True,
-            default_extension=EDITOR_EXTENSION,
-        )
-        current_document = values[KEY_EDITOR]
-        DOCUMENT_INITIAL_LENGTH, DOCUMENT_INITIAL_HASH = save_file(CURRENTLY_OPEN_FILE, current_document)
-        continue
-    if event == EVENT_UNDO:
-        # We undo the last action
-        window[KEY_EDITOR].Widget.undo()
-        continue
-    if event == EVENT_REDO:
-        # We redo the last action
-        window[KEY_EDITOR].Widget.redo()
-        continue
-    if event == EVENT_CUT:
-        # We copy the contents of the editor into the clipboard
-        # and delete the contents of the editor
-        window[KEY_EDITOR].Widget.cut()
-        continue
-    if event == EVENT_PASTE:
-        # We paste the contents of the clipboard into the editor
-        window[KEY_EDITOR].Widget.paste()
-        continue
-    if event == EVENT_COPY:
-        # We copy the contents of the editor into the clipboard
-        window[KEY_EDITOR].Widget.copy()
-        continue
-    if event == EVENT_CLEAR:
-        # We delete the contents of the editor
-        window[KEY_EDITOR].Widget.clear()
-        continue
-    if event == EVENT_SELECTALL:
-        # We select all the contents of the editor
-        window[KEY_EDITOR].Widget.selectAll()
-        continue
+def main():
+    """
+    Our main program loop, this is where we handle everything
+    """
+    global CURRENTLY_OPEN_FILE
+    global HAS_UNSAVED_CHANGES
+    global DOCUMENT_INITIAL_LENGTH
+    global DOCUMENT_INITIAL_HASH
 
-# Some cleanup before the app terminates
-window.close()
+    # We create a window, and pass it our layout
+    window = sg.Window(
+        NOTEPAD_TITLE,
+        layout,
+        size=EDITOR_SIZE,
+    )
+
+    # Our main event loop, this is what keeps the app running and updating
+    while True:
+        # We constantly read the events and values from our window
+        event, values = window.read()
+        # We can check if changes have been made to the document
+        HAS_UNSAVED_CHANGES = validate_changes(values[KEY_EDITOR])
+        if event in QUIT_EVENTS:
+            # Break out of the loop if the user wants to close the window,
+            # checks if there are unsaved changes
+            if not HAS_UNSAVED_CHANGES or confirm_exit() == 'OK':
+                break
+        if event == EVENT_ABOUT:
+            # We temporarily hide the main window to display the about message
+            window.disappear()
+            # Using a dedicated function to handle the about event
+            show_about()
+            # Let's make sure the window is displayed again
+            window.reappear()
+            # We use the continue statement to return to the top of the loop
+            continue
+        if event == EVENT_OPEN:
+            # We open a file browser dialog to select a file to open
+            CURRENTLY_OPEN_FILE = get_file_to_load()
+            new_contents, DOCUMENT_INITIAL_LENGTH, DOCUMENT_INITIAL_HASH = (
+                load_file(CURRENTLY_OPEN_FILE)
+            )
+            window[KEY_EDITOR].update(new_contents)
+            continue
+        if event == EVENT_SAVE and CURRENTLY_OPEN_FILE:
+            # We save the document into the previously opened file
+            current_document = values[KEY_EDITOR]
+            DOCUMENT_INITIAL_LENGTH, DOCUMENT_INITIAL_HASH = (
+                save_file(CURRENTLY_OPEN_FILE, current_document)
+            )
+            continue
+        if (event == EVENT_SAVE_AS or
+                (event == EVENT_SAVE and not CURRENTLY_OPEN_FILE)):
+            # We open a file browser dialog to select a file to save
+            CURRENTLY_OPEN_FILE = get_file_to_save()
+            current_document = values[KEY_EDITOR]
+            DOCUMENT_INITIAL_LENGTH, DOCUMENT_INITIAL_HASH = (
+                save_file(CURRENTLY_OPEN_FILE, current_document)
+            )
+            continue
+        if event == EVENT_UNDO:
+            # We undo the last action
+            window[KEY_EDITOR].Widget.undo()
+            continue
+        if event == EVENT_REDO:
+            # We redo the last action
+            window[KEY_EDITOR].Widget.redo()
+            continue
+        if event == EVENT_CUT:
+            # We copy the contents of the editor into the clipboard
+            # and delete the contents of the editor
+            window[KEY_EDITOR].Widget.cut()
+            continue
+        if event == EVENT_PASTE:
+            # We paste the contents of the clipboard into the editor
+            window[KEY_EDITOR].Widget.paste()
+            continue
+        if event == EVENT_COPY:
+            # We copy the contents of the editor into the clipboard
+            window[KEY_EDITOR].Widget.copy()
+            continue
+        if event == EVENT_CLEAR:
+            # We delete the contents of the editor
+            window[KEY_EDITOR].Widget.clear()
+            continue
+        if event == EVENT_SELECTALL:
+            # We select all the contents of the editor
+            window[KEY_EDITOR].Widget.selectAll()
+            continue
+
+    # Some cleanup before the app terminates
+    window.close()
+
+# Finally, we call our main function, making sure it's executed directly and not
+# as a module
+if __name__ == "__main__":
+    main()
