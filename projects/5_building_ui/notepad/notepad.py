@@ -5,6 +5,7 @@ import PySimpleGUIQt as sg
 # We start by defining some settings that can be modified at any time
 NOTEPAD_VERSION = '1.0'
 NOTEPAD_TITLE = 'Notepad'
+UNSAVED_INDICATOR = '*'
 NOTEPAD_THEME = 'Dark2'
 NOTEPAD_AUTHOR = 'João Carmo'
 EDITOR_COLOR_BACKGROUND = '#191919'
@@ -42,6 +43,9 @@ BUTTON_OPTIONS = {
 
 # Some helpful globals
 CURRENTLY_OPEN_FILE = ''
+DOCUMENT_INITIAL_LENGTH = 0
+DOCUMENT_INITIAL_HASH = 0
+HAS_UNSAVED_CHANGES = False
 
 # Let's apply our overall Theme, for a complete list: sg.theme_list()
 sg.theme(NOTEPAD_THEME)
@@ -100,42 +104,73 @@ window = sg.Window(
 )
 
 # We should always try to split our code into smaller functions
+def validate_changes(value):
+    """
+    Validate the changes to the editor, returns True if there are unsaved
+    changes
+    """
+    if len(value) != DOCUMENT_INITIAL_LENGTH:
+        return True
+    if hash(value) != DOCUMENT_INITIAL_HASH:
+        return True
+    return False
+
+def confirm_exit():
+    """Confirm exit from the editor, if there are unsaved changes"""
+    return sg.popup_ok_cancel(
+        'Are you sure you want to exit?',
+        title='Unsaved changes',
+        button_color=EDITOR_BUTTON_COLOR,
+        font=EDITOR_FONT,
+        grab_anywhere=True,
+    )
+
 def load_file(filename):
     """Load a file into the editor"""
     if not filename:
-        return
-    with open(filename, "r") as f:
+        return 0, 0
+    with open(filename, 'r') as f:
         contents = f.read()
         window[KEY_EDITOR].update(contents)
+        return len(contents), hash(contents)
 
 def save_file(filename, contents):
     """Save a file from the editor"""
     if not filename:
-        return
-    with open(filename, "w") as f:
+        return 0, 0
+    with open(filename, 'w') as f:
         f.write(contents)
+        return len(contents), hash(contents)
+
+def show_about():
+    # We temporarily hide the main window and display an information message
+    window.disappear()
+    sg.popup(
+        f'{NOTEPAD_TITLE} {NOTEPAD_VERSION}',
+        f'by {NOTEPAD_AUTHOR}',
+        '',
+        title=EVENT_ABOUT,
+        custom_text=EVENT_OK,
+        button_color=EDITOR_BUTTON_COLOR,
+        font=EDITOR_FONT,
+        grab_anywhere=True,
+    )
+    window.reappear()
 
 # Our main event loop, this is what keeps the app running and updating
 while True:
     # We constantly read the events and values from our window
     event, values = window.read()
+    # We can check if changes have been made to the document
+    HAS_UNSAVED_CHANGES = validate_changes(values[KEY_EDITOR])
     if event in QUIT_EVENTS:
-        # Break out of the loop if the user wants to close the window
-        break
+        # Break out of the loop if the user wants to close the window, checks
+        # if there are unsaved changes
+        if not HAS_UNSAVED_CHANGES or confirm_exit() == 'OK':
+            break
     if event == EVENT_ABOUT:
-        # We temporarily hide the main window and display an information message
-        window.disappear()
-        sg.popup(
-            f'{NOTEPAD_TITLE} {NOTEPAD_VERSION}',
-            f'by {NOTEPAD_AUTHOR}',
-            '',
-            title=EVENT_ABOUT,
-            custom_text=EVENT_OK,
-            button_color=EDITOR_BUTTON_COLOR,
-            font=EDITOR_FONT,
-            grab_anywhere=True,
-        )
-        window.reappear()
+        # Using a dedicated function to handle the about event
+        show_about()
         # We use the continue statement to return to the top of the loop
         continue
     if event == EVENT_OPEN:
@@ -147,12 +182,12 @@ while True:
             no_window=True,
             default_extension=EDITOR_EXTENSION,
         )
-        load_file(CURRENTLY_OPEN_FILE)
+        DOCUMENT_INITIAL_LENGTH, DOCUMENT_INITIAL_HASH = load_file(CURRENTLY_OPEN_FILE)
         continue
     if event == EVENT_SAVE and CURRENTLY_OPEN_FILE:
         # We save the document into the previously opened file
         current_document = values[KEY_EDITOR]
-        save_file(CURRENTLY_OPEN_FILE, current_document)
+        DOCUMENT_INITIAL_LENGTH, DOCUMENT_INITIAL_HASH = save_file(CURRENTLY_OPEN_FILE, current_document)
         continue
     if (event == EVENT_SAVE_AS or
             (event == EVENT_SAVE and not CURRENTLY_OPEN_FILE)):
@@ -166,7 +201,7 @@ while True:
             default_extension=EDITOR_EXTENSION,
         )
         current_document = values[KEY_EDITOR]
-        save_file(CURRENTLY_OPEN_FILE, current_document)
+        DOCUMENT_INITIAL_LENGTH, DOCUMENT_INITIAL_HASH = save_file(CURRENTLY_OPEN_FILE, current_document)
         continue
     if event == EVENT_UNDO:
         # We undo the last action
